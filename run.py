@@ -48,6 +48,7 @@ def validate_data(values):
     except ValueError as e:
         print(f"Invalid data: {e}, please try again.\n")
         return False
+
     return True
 
-get_sales_data()
+data = get_sales_data()
