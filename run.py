@@ -11,13 +11,15 @@ SCOPE = [
 CREDS = Credentials.from_service_account_file('creds.json')
 SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
-SHEET = GSPREAD_CLIENT.open("love_sandwiches")
+SHEET = GSPREAD_CLIENT.open('love_sandwiches')
 
-sales = SHEET.worksheet('sales')
 
 def get_sales_data():
     """
     Get sales figures input from the user.
+    Run a while loop to collect a valid string of data from the user
+    via the terminal, which must be a string of 6 numbers separated
+    by commas. The loop will repeatedly request data, until it is valid.
     """
     while True:
         print("Please enter sales data from the last market.")
@@ -25,12 +27,13 @@ def get_sales_data():
         print("Example: 10,20,30,40,50,60\n")
 
         data_str = input("Enter your data here: ")
+
         sales_data = data_str.split(",")
-        validate_data(sales_data)
 
         if validate_data(sales_data):
-            print("data is valid!")
+            print("Data is valid!")
             break
+
     return sales_data
 
 
@@ -53,11 +56,24 @@ def validate_data(values):
     return True
 
 
+def update_worksheet(data, worksheet):
+    """
+    Receives a list of integers to be inserted into a worksheet
+    Update the relevant worksheet with the data provided
+    """
+    print(f"Updating {worksheet} worksheet...\n")
+    worksheet_to_update = SHEET.worksheet(worksheet)
+    worksheet_to_update.append_row(data)
+    print(f"{worksheet} worksheet updated successfully\n")
+
+
 def calculate_surplus_data(sales_row):
     """
-    Compare sales with stock and calculates surplus for each item type
-    - positive surplus indicates waste
-    - Negative surplus indicates extra stock made fresh when stock sold out.
+    Compare sales with stock and calculate the surplus for each item type.
+
+    The surplus is defined as the sales figure subtracted from the stock:
+    - Positive surplus indicates waste
+    - Negative surplus indicates extra made when stock was sold out.
     """
     print("Calculating surplus data...\n")
     stock = SHEET.worksheet("stock").get_all_values()
@@ -70,14 +86,21 @@ def calculate_surplus_data(sales_row):
 
     return surplus_data
 
-def update_worksheet(data, worksheet):
+
+def get_last_5_entries_sales():
     """
-    Update a worksheet as needed, add new row with the new values from user
+    Collects columns of data from sales worksheet, collecting
+    the last 5 entries for each sandwich and returns the data
+    as a list of lists.
     """
-    print(f"Updating {worksheet} worksheet...\n")
-    worksheet_to_update = SHEET.worksheet(worksheet)
-    worksheet_to_update.append_row(data)
-    print(f"{worksheet} worksheet updated successfully.\n")
+    sales = SHEET.worksheet("sales")
+
+    columns = []
+    for ind in range(1, 7):
+        column = sales.col_values(ind)
+        columns.append(column[-5:])
+
+    return columns
 
 def main():
     """
@@ -88,7 +111,8 @@ def main():
     update_worksheet(sales_data, "sales")
     new_surplus_data = calculate_surplus_data(sales_data)
     update_worksheet(new_surplus_data, "surplus")
-    print(new_surplus_data)
 
-print("Welcome to love sandwiches Data Automation")
+
+print("Welcome to Love Sandwiches Data Automation")
 main()
+sales_columns = get_last_5_entries_sales()
