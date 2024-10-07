@@ -1,2 +1,7 @@
-# Your requirements go here
-gsrpead
+cachetools==5.5.0
+google-auth==2.35.0
+google-auth-oathlib1.2.1
+gspread==6.1.2
+pyasn1_modules==0.4.1
+requests-oauthlib==2.0.0
+rsa==4.9
